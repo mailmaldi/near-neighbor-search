@@ -16,15 +16,15 @@
 
 package com.edduarte.similarity.internal;
 
-import com.edduarte.similarity.SetSimilarity;
-import com.edduarte.similarity.Similarity;
-import com.edduarte.similarity.converter.Set2SignatureConverter;
-import com.edduarte.similarity.converter.Signature2BandsConverter;
-
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
+import com.edduarte.similarity.SetSimilarity;
+import com.edduarte.similarity.Similarity;
+import com.edduarte.similarity.converter.Set2SignatureConverter;
+import com.edduarte.similarity.converter.Signature2BandsConverter;
 
 /**
  * @author Eduardo Duarte (<a href="mailto:hi@edduarte.com">hi@edduarte.com</a>)
@@ -55,11 +55,11 @@ public class LSHSetSimilarity implements SetSimilarity {
      *             negatives. A sensible threshold is 0.5, so we have a equal
      *             number of false positives and false negatives.
      */
-    public LSHSetSimilarity(ExecutorService exec, int n, int b, int r, double s) {
+    public LSHSetSimilarity(final ExecutorService exec, final int n, final int b, final int r, final double s) {
         // signature size is determined by a threshold S
         this.exec = exec;
-        int R = (int) Math.ceil(Math.log(1.0 / b) / Math.log(s)) + 1;
-        int sigSize = R * b;
+        final int R = (int) Math.ceil(Math.log(1.0 / b) / Math.log(s)) + 1;
+        final int sigSize = R * b;
         this.jaccard = new JaccardSetSimilarity();
         this.sigp = new Set2SignatureConverter(n, sigSize);
         this.bandp = new Signature2BandsConverter(b, r);
@@ -67,32 +67,34 @@ public class LSHSetSimilarity implements SetSimilarity {
 
 
     @Override
-    public double calculate(Collection<? extends Number> c1,
-                            Collection<? extends Number> c2) {
+    public double calculate(
+        final Collection<? extends Number> c1,
+        final Collection<? extends Number> c2) {
         return isCandidatePair(c1, c2) ?
-                jaccard.calculate(c1, c2) : 0;
+            this.jaccard.calculate(c1, c2) : 0;
     }
 
 
-    private boolean isCandidatePair(Collection<? extends Number> c1,
-                                    Collection<? extends Number> c2) {
+    private boolean isCandidatePair(
+        final Collection<? extends Number> c1,
+        final Collection<? extends Number> c2) {
         try {
-            Future<int[]> signatureFuture1 = exec.submit(sigp.apply(c1));
-            Future<int[]> signatureFuture2 = exec.submit(sigp.apply(c2));
+            final Future<int[]> signatureFuture1 = this.exec.submit(this.sigp.apply(c1));
+            final Future<int[]> signatureFuture2 = this.exec.submit(this.sigp.apply(c2));
 
-            int[] signature1 = signatureFuture1.get();
-            int[] signature2 = signatureFuture2.get();
+            final int[] signature1 = signatureFuture1.get();
+            final int[] signature2 = signatureFuture2.get();
 
-            Future<int[]> bandsFuture1 = exec.submit(bandp.apply(signature1));
-            Future<int[]> bandsFuture2 = exec.submit(bandp.apply(signature2));
+            final Future<int[]> bandsFuture1 = this.exec.submit(this.bandp.apply(signature1));
+            final Future<int[]> bandsFuture2 = this.exec.submit(this.bandp.apply(signature2));
 
-            int[] bands1 = bandsFuture1.get();
-            int[] bands2 = bandsFuture2.get();
+            final int[] bands1 = bandsFuture1.get();
+            final int[] bands2 = bandsFuture2.get();
 
             return Similarity.isCandidatePair(bands1, bands2);
 
         } catch (ExecutionException | InterruptedException ex) {
-            String m = "There was a problem processing set signatures.";
+            final String m = "There was a problem processing set signatures.";
             throw new RuntimeException(m, ex);
         }
     }

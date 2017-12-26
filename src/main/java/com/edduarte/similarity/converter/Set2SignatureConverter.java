@@ -19,10 +19,11 @@ package com.edduarte.similarity.converter;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 /**
  * Processor class to retrieve shingles of length k.
@@ -64,22 +65,22 @@ public class Set2SignatureConverter
      * Initializes hashing functions to compute MinHash signatures for sets that
      * could have a maximum count calculate 'n' elements with a given signature size.
      */
-    public Set2SignatureConverter(int n, int sigSize) {
+    public Set2SignatureConverter(final int n, final int sigSize) {
         this.n = n;
         this.sigSize = sigSize;
-        SecureRandom r = new SecureRandom();
-        this.a = new int[sigSize];
-        this.b = new int[sigSize];
-        for (int i = 0; i < sigSize; i++) {
-            a[i] = 1 + r.nextInt(this.n - 1);
-            b[i] = r.nextInt(this.n);
+        final SecureRandom r = new SecureRandom();
+        this.a = new int[this.sigSize];
+        this.b = new int[this.sigSize];
+        for (int i = 0; i < this.sigSize; i++) {
+            this.a[i] = 1 + r.nextInt(this.n - 1);
+            this.b[i] = r.nextInt(this.n);
         }
     }
 
 
     @Override
-    public Callable<int[]> apply(Collection<? extends Number> set) {
-        return new HashCallable(n, sigSize, a, b, set);
+    public Callable<int[]> apply(final Collection<? extends Number> set) {
+        return new HashCallable(this.n, this.sigSize, this.a, this.b, set);
     }
 
 
@@ -98,9 +99,10 @@ public class Set2SignatureConverter
         private final Collection<? extends Number> set;
 
 
-        private HashCallable(int n, int sigSize,
-                             int[] a, int[] b,
-                             Collection<? extends Number> set) {
+        private HashCallable(
+            final int n, final int sigSize,
+            final int[] a, final int[] b,
+            final Collection<? extends Number> set) {
             this.n = n;
             this.sigSize = sigSize;
             this.a = a;
@@ -110,19 +112,15 @@ public class Set2SignatureConverter
 
 
         @Override
-        public int[] call() throws Exception {
-            int[] signature = new int[sigSize];
+        public int[] call()
+        {
+            final int[] signature = IntStream.range(0, this.sigSize).map(i -> Integer.MAX_VALUE).toArray();
 
-            for (int i = 0; i < sigSize; i++) {
-                signature[i] = Integer.MAX_VALUE;
-            }
-
-            List<? extends Number> list = new ArrayList<>(set);
-            Collections.sort(list, (o1, o2) ->
-                    Long.compare(o1.longValue(), o2.longValue()));
+            final List<? extends Number> list = new ArrayList<>(this.set);
+            list.sort(Comparator.comparingLong(Number::longValue));
 
             for (final Number x : list) {
-                for (int i = 0; i < sigSize; i++) {
+                for (int i = 0; i < this.sigSize; i++) {
                     signature[i] = Math.min(signature[i], universalHashing(i, x));
                 }
             }
@@ -131,8 +129,8 @@ public class Set2SignatureConverter
         }
 
 
-        private int universalHashing(int i, Number x) {
-            return (int) ((a[i] * x.longValue() + b[i]) % LARGE_PRIME) % n;
+        private int universalHashing(final int i, final Number x) {
+            return (int) ((this.a[i] * x.longValue() + this.b[i]) % LARGE_PRIME); // TODO removed %n
         }
     }
 }

@@ -16,14 +16,14 @@
 
 package com.edduarte.similarity.internal;
 
-import com.edduarte.similarity.SetSimilarity;
-import com.edduarte.similarity.Similarity;
-import com.edduarte.similarity.converter.Set2SignatureConverter;
-
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
+import com.edduarte.similarity.SetSimilarity;
+import com.edduarte.similarity.Similarity;
+import com.edduarte.similarity.converter.Set2SignatureConverter;
 
 /**
  * @author Eduardo Duarte (<a href="mailto:hi@edduarte.com">hi@edduarte.com</a>)
@@ -46,26 +46,27 @@ public class MinHashSetSimilarity implements SetSimilarity {
      * @param n       the total number of unique elements in both sets
      * @param sigSize the length of the signature array to be generated
      */
-    public MinHashSetSimilarity(ExecutorService exec, int n, int sigSize) {
+    public MinHashSetSimilarity(final ExecutorService exec, final int n, final int sigSize) {
         this.exec = exec;
         this.p = new Set2SignatureConverter(n, sigSize);
     }
 
 
     @Override
-    public double calculate(Collection<? extends Number> c1,
-                            Collection<? extends Number> c2) {
-        Future<int[]> signatureFuture1 = exec.submit(p.apply(c1));
-        Future<int[]> signatureFuture2 = exec.submit(p.apply(c2));
+    public double calculate(
+        final Collection<? extends Number> c1,
+        final Collection<? extends Number> c2) {
+        final Future<int[]> signatureFuture1 = this.exec.submit(this.p.apply(c1));
+        final Future<int[]> signatureFuture2 = this.exec.submit(this.p.apply(c2));
 
         try {
-            int[] signature1 = signatureFuture1.get();
-            int[] signature2 = signatureFuture2.get();
+            final int[] signature1 = signatureFuture1.get();
+            final int[] signature2 = signatureFuture2.get();
 
             return Similarity.signatureIndex(signature1, signature2);
 
         } catch (ExecutionException | InterruptedException ex) {
-            String m = "There was a problem processing set signatures.";
+            final String m = "There was a problem processing set signatures.";
             throw new RuntimeException(m, ex);
         }
     }

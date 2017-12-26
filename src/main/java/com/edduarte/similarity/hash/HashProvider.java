@@ -24,18 +24,18 @@ public class HashProvider {
      * @param a the byte array to be hashed
      * @return the 32 bit integer hash value
      */
-    static int hashBytes(byte a[]) {
+    static int hashBytes(final byte[] a) {
         // 32 bit FNV constants. Using longs as Java does not support unsigned
         // datatypes.
         final long FNV_PRIME = 16777619;
         final long FNV_OFFSET_BASIS = 2166136261l;
 
         if (a == null)
-            return 0;
+        {return 0;}
 
         long result = FNV_OFFSET_BASIS;
-        for (byte element : a) {
-            result = (result * FNV_PRIME) & 0xFFFFFFFF;
+        for (final byte element : a) {
+            result = result * FNV_PRIME;
             result ^= element;
         }
 
@@ -50,18 +50,18 @@ public class HashProvider {
      * @param k     number of hashes to be computed
      * @return array with <i>hashes</i> integer hash positions in the range <i>[0,size)</i>
      */
-    public static int[] hashCarterWegman(byte[] value, int m, int k) {
-        int[] positions = new int[k];
-        BigInteger prime32 = BigInteger.valueOf(4294967279l);
-        BigInteger prime64 = BigInteger.valueOf(53200200938189l);
-        BigInteger prime128 = new BigInteger("21213943449988109084994671");
-        Random r = new Random(seed32);
+    public static int[] hashCarterWegman(final byte[] value, final int m, final int k) {
+        final int[] positions = new int[k];
+        final BigInteger prime32 = BigInteger.valueOf(4294967279L);
+        final BigInteger prime64 = BigInteger.valueOf(53200200938189L);
+        final BigInteger prime128 = new BigInteger("21213943449988109084994671");
+        final Random r = new Random(seed32);
         //BigInteger.valueOf(hashBytes(value)
-        BigInteger v = new BigInteger(value.length > 0 ? value : new byte[1]);
+        final BigInteger v = new BigInteger(value.length > 0 ? value : new byte[1]);
 
         for (int i = 0; i < k; i++) {
-            BigInteger a = BigInteger.valueOf(r.nextLong());
-            BigInteger b = BigInteger.valueOf(r.nextLong());
+            final BigInteger a = BigInteger.valueOf(r.nextLong());
+            final BigInteger b = BigInteger.valueOf(r.nextLong());
             positions[i] = a.multiply(v).add(b).mod(prime64)
                     .mod(BigInteger.valueOf(m)).intValue();
         }
@@ -75,9 +75,9 @@ public class HashProvider {
      * @param k     number of hashes to be computed
      * @return array with <i>hashes</i> integer hash positions in the range <i>[0,size)</i>
      */
-    public static int[] hashRNG(byte[] value, int m, int k) {
-        int[] positions = new int[k];
-        Random r = new Random(hashBytes(value));
+    public static int[] hashRNG(final byte[] value, final int m, final int k) {
+        final int[] positions = new int[k];
+        final Random r = new Random(hashBytes(value));
         for (int i = 0; i < k; i++) {
             positions[i] = r.nextInt(m);
         }
@@ -91,7 +91,7 @@ public class HashProvider {
      * @param k     number of hashes to be computed
      * @return array with <i>hashes</i> integer hash positions in the range <i>[0,size)</i>
      */
-    public static int[] hashCRC(byte[] value, int m, int k) {
+    public static int[] hashCRC(final byte[] value, final int m, final int k) {
         return hashChecksum(value, new CRC32(), m, k);
     }
 
@@ -102,13 +102,13 @@ public class HashProvider {
      * @param k     number of hashes to be computed
      * @return array with <i>hashes</i> integer hash positions in the range <i>[0,size)</i>
      */
-    public static int[] hashAdler(byte[] value, int m, int k) {
+    public static int[] hashAdler(final byte[] value, final int m, final int k) {
         return hashChecksum(value, new Adler32(), m, k);
     }
 
 
-    public static int[] hashChecksum(byte[] value, Checksum cs, int m, int k) {
-        int[] positions = new int[k];
+    public static int[] hashChecksum(final byte[] value, final Checksum cs, final int m, final int k) {
+        final int[] positions = new int[k];
         int hashes = 0;
         int salt = 0;
         while (hashes < k) {
@@ -118,7 +118,7 @@ public class HashProvider {
             // calculated hashes, the loop counter and
             // a static seed
             cs.update(hashes + salt++ + seed32);
-            int hash = rejectionSample((int) cs.getValue(), m);
+            final int hash = rejectionSample((int) cs.getValue(), m);
             if (hash != -1) {
                 positions[hashes++] = hash;
             }
@@ -133,7 +133,7 @@ public class HashProvider {
      * @param k     number of hashes to be computed
      * @return array with <i>hashes</i> integer hash positions in the range <i>[0,size)</i>
      */
-    public static int[] hashSimpleLCG(byte[] value, int m, int k) {
+    public static int[] hashSimpleLCG(final byte[] value, final int m, final int k) {
         // Java constants
         final long multiplier = 0x5DEECE66DL;
         final long addend = 0xBL;
@@ -145,29 +145,29 @@ public class HashProvider {
         // Handle the special case: smallest negative number is itself as the
         // absolute value
         if (reduced == Integer.MIN_VALUE)
-            reduced = 42;
+        {reduced = 42;}
 
         // Calculate hashes numbers iteratively
-        int[] positions = new int[k];
+        final int[] positions = new int[k];
         long seed = reduced;
         for (int i = 0; i < k; i++) {
             // LCG formula: x_i+1 = (multiplier * x_i + addend) mod mask
-            seed = (seed * multiplier + addend) & mask;
-            positions[i] = (int) (seed >>> (48 - 30)) % m;
+            seed = seed * multiplier + addend & mask;
+            positions[i] = (int) (seed >>> 48 - 30) % m;
         }
         return positions;
     }
 
 
-    public static int[] hashMurmur3(byte[] value, int m, int k) {
+    public static int[] hashMurmur3(final byte[] value, final int m, final int k) {
         return rejectionSample(HashProvider::murmur3_signed, value, m, k);
     }
 
 
-    public static int[] hashCassandra(byte[] value, int m, int k) {
-        int[] result = new int[k];
-        long hash1 = murmur3(0, value);
-        long hash2 = murmur3((int) hash1, value);
+    public static int[] hashCassandra(final byte[] value, final int m, final int k) {
+        final int[] result = new int[k];
+        final long hash1 = murmur3(0, value);
+        final long hash2 = murmur3((int) hash1, value);
         for (int i = 0; i < k; i++) {
             result[i] = (int) ((hash1 + i * hash2) % m);
         }
@@ -175,16 +175,16 @@ public class HashProvider {
     }
 
 
-    public static int murmur3_signed(int seed, byte[] bytes) {
+    public static int murmur3_signed(final int seed, final byte[] bytes) {
         return (int) murmur3(seed, bytes);
     }
 
 
-    public static long murmur3(int seed, byte[] bytes) {
+    public static long murmur3(final int seed, final byte[] bytes) {
         int h1 = seed;
         //Standard in Guava
-        int c1 = 0xcc9e2d51;
-        int c2 = 0x1b873593;
+        final int c1 = 0xcc9e2d51;
+        final int c2 = 0x1b873593;
         int len = bytes.length;
         int i = 0;
 
@@ -219,7 +219,7 @@ public class HashProvider {
                     k1 ^= (bytes[i + 1] & 0xFF) << 8;
                     // fall through
                 case 1:
-                    k1 ^= (bytes[i] & 0xFF);
+                    k1 ^= bytes[i] & 0xFF;
                     // fall through
                 default:
                     k1 *= c1;
@@ -247,12 +247,12 @@ public class HashProvider {
     // http://dmy999.com/article/50/murmurhash-2-java-port by Derekt
     // Young (Public Domain)
     // as the Hadoop implementation by Andrzej Bialecki is buggy
-    public static int[] hashMurmur2(byte[] value, int em, int ka) {
-        int[] positions = new int[ka];
+    public static int[] hashMurmur2(final byte[] value, final int em, final int ka) {
+        final int[] positions = new int[ka];
 
         int hashes = 0;
         int lastHash = 0;
-        byte[] data = value.clone();
+        final byte[] data = value.clone();
         while (hashes < ka) {
 
 
@@ -268,8 +268,8 @@ public class HashProvider {
 
             // 'size' and 'r' are mixing constants generated offline.
             // They're not really 'magic', they just happen to work well.
-            int m = 0x5bd1e995;
-            int r = 24;
+            final int m = 0x5bd1e995;
+            final int r = 24;
 
             // Initialize the hash to a 'random' value
             int len = data.length;
@@ -299,7 +299,7 @@ public class HashProvider {
                 case 2:
                     h ^= (data[i + 1] & 0xFF) << 8;
                 case 1:
-                    h ^= (data[i + 0] & 0xFF);
+                    h ^= data[i + 0] & 0xFF;
                     h *= m;
             }
 
@@ -323,23 +323,23 @@ public class HashProvider {
      * @param m      integer output range [1,size]
      * @return the number down-sampled to interval [0, size]. Or -1 if it has to be rejected.
      */
-    public static int rejectionSample(int random, int m) {
+    public static int rejectionSample(int random, final int m) {
         random = Math.abs(random);
-        if (random > (2147483647 - 2147483647 % m)
+        if (random > 2147483647 - 2147483647 % m
                 || random == Integer.MIN_VALUE)
-            return -1;
+        {return -1;}
         else
-            return random % m;
+        {return random % m;}
     }
 
 
-    public static int[] rejectionSample(BiFunction<Integer, byte[], Integer> hashFunction, byte[] value, int m, int k) {
-        int[] hashes = new int[k];
+    public static int[] rejectionSample(final BiFunction<Integer, byte[], Integer> hashFunction, final byte[] value, final int m, final int k) {
+        final int[] hashes = new int[k];
         int seed = 0;
         int pos = 0;
         while (pos < k) {
             seed = hashFunction.apply(seed, value);
-            int hash = rejectionSample(seed, m);
+            final int hash = rejectionSample(seed, m);
             if (hash != -1) {
                 hashes[pos++] = hash;
             }
@@ -355,44 +355,44 @@ public class HashProvider {
      * @param method the hash method name used by {@link MessageDigest#getInstance(String)}
      * @return array with <i>hashes</i> integer hash positions in the range <i>[0,size)</i>
      */
-    public static int[] hashCrypt(byte[] value, int m, int k, String method) {
+    public static int[] hashCrypt(final byte[] value, final int m, final int k, final String method) {
         //MessageDigest is not thread-safe --> use new instance
         MessageDigest cryptHash = null;
         try {
             cryptHash = MessageDigest.getInstance(method);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (final NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
 
-        int[] positions = new int[k];
+        final int[] positions = new int[k];
 
         int computedHashes = 0;
         // Add salt to the hash deterministically in order to generate different
         // hashes for each round
         // Alternative: use pseudorandom sequence
-        Random r = new Random(seed32);
+        final Random r = new Random(seed32);
         byte[] digest = new byte[0];
         while (computedHashes < k) {
             // byte[] saltBytes =
             // ByteBuffer.allocate(4).putInt(r.nextInt()).array();
             cryptHash.update(digest);
             digest = cryptHash.digest(value);
-            BitSet hashed = BitSet.valueOf(digest);
+            final BitSet hashed = BitSet.valueOf(digest);
 
             // Convert the hash to numbers in the range [0,size)
             // Size of the BloomFilter rounded to the next power of two
-            int filterSize = 32 - Integer.numberOfLeadingZeros(m);
+            final int filterSize = 32 - Integer.numberOfLeadingZeros(m);
             // Computed hash bits
-            int hashBits = digest.length * 8;
+            final int hashBits = digest.length * 8;
             // Split the hash value according to the size of the Bloomfilter --> higher performance than just doing modulo
-            for (int split = 0; split < (hashBits / filterSize)
+            for (int split = 0; split < hashBits / filterSize
                     && computedHashes < k; split++) {
-                int from = split * filterSize;
-                int to = (split + 1) * filterSize;
-                BitSet hashSlice = hashed.get(from, to);
+                final int from = split * filterSize;
+                final int to = (split + 1) * filterSize;
+                final BitSet hashSlice = hashed.get(from, to);
                 // Bitset to Int
-                long[] longHash = hashSlice.toLongArray();
-                int intHash = longHash.length > 0 ? (int) longHash[0] : 0;
+                final long[] longHash = hashSlice.toLongArray();
+                final int intHash = longHash.length > 0 ? (int) longHash[0] : 0;
                 // Only use the position if it's in [0,size); Called rejection sampling
                 if (intHash < m) {
                     positions[computedHashes] = intHash;
@@ -408,7 +408,7 @@ public class HashProvider {
     /**
      * Different types of hash functions that can be used.
      */
-    public static enum HashMethod {
+    public enum HashMethod {
         /**
          * Generates hash values using the Java Random Number Generator (RNG) which is a Linear Congruential Generator
          * (LCG), implementing the following formula: <br> <code>number_i+1 = (a * number_i + countingBits) mod
@@ -492,16 +492,16 @@ public class HashProvider {
          */
         SHA512((bytes, m, k) -> HashProvider.hashCrypt(bytes, m, k, "SHA-512"));
 
-        private HashFunction hashFunction;
+        private final HashFunction hashFunction;
 
 
-        private HashMethod(HashFunction hashFunction) {
+        HashMethod(final HashFunction hashFunction) {
             this.hashFunction = hashFunction;
         }
 
 
         public HashFunction getHashFunction() {
-            return hashFunction;
+            return this.hashFunction;
         }
     }
 
@@ -509,7 +509,7 @@ public class HashProvider {
     /**
      * An interface which can be implemented to provide custom hash functions.
      */
-    public static interface HashFunction extends Serializable {
+    public interface HashFunction extends Serializable {
 
         /**
          * Computes hash values.
@@ -519,6 +519,6 @@ public class HashProvider {
          * @param k     number of hashes to be computed
          * @return int array of hashes hash values
          */
-        public int[] hash(byte[] value, int m, int k);
+        int[] hash(byte[] value, int m, int k);
     }
 }

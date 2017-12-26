@@ -1,13 +1,5 @@
 package com.edduarte.similarity;
 
-import com.edduarte.similarity.hash.HashProvider.HashMethod;
-import com.edduarte.similarity.internal.JaccardSetSimilarity;
-import com.edduarte.similarity.internal.JaccardStringSimilarity;
-import com.edduarte.similarity.internal.LSHSetSimilarity;
-import com.edduarte.similarity.internal.LSHStringSimilarity;
-import com.edduarte.similarity.internal.MinHashSetSimilarity;
-import com.edduarte.similarity.internal.MinHashStringSimilarity;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,6 +11,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.edduarte.similarity.hash.HashProvider.HashMethod;
+import com.edduarte.similarity.internal.JaccardSetSimilarity;
+import com.edduarte.similarity.internal.JaccardStringSimilarity;
+import com.edduarte.similarity.internal.LSHSetSimilarity;
+import com.edduarte.similarity.internal.LSHStringSimilarity;
+import com.edduarte.similarity.internal.MinHashSetSimilarity;
+import com.edduarte.similarity.internal.MinHashStringSimilarity;
+
 /**
  * @author Eduardo Duarte (<a href="mailto:hi@edduarte.com">hi@edduarte.com</a>)
  * @version 0.0.1
@@ -29,62 +29,63 @@ public interface Similarity<T> {
     double calculate(T t1, T t2);
 
 
-    public static JaccardFactory jaccard() {
+    static JaccardFactory jaccard() {
         return new JaccardFactory();
     }
 
-    public static MinHashFactory minhash() {
+    static MinHashFactory minhash() {
         return new MinHashFactory();
     }
 
-    public static LSHFactory lsh() {
+    static LSHFactory lsh() {
         return new LSHFactory();
     }
 
 
-    public static double jaccardIndex(int intersectionCount, int unionCount) {
+    static double jaccardIndex(final int intersectionCount, final int unionCount) {
         return (double) intersectionCount / (double) unionCount;
     }
 
 
-    public static double jaccardIndex(List<CharSequence> shingles1,
-                                      List<CharSequence> shingles2) {
+    static double jaccardIndex(
+        final List<CharSequence> shingles1,
+        final List<CharSequence> shingles2) {
 
-        ArrayList<Integer> r1 = new ArrayList<>();
-        ArrayList<Integer> r2 = new ArrayList<>();
+        final ArrayList<Integer> r1 = new ArrayList<>();
+        final ArrayList<Integer> r2 = new ArrayList<>();
 
-        Map<CharSequence, Integer> shingleOccurrencesMap1 = new HashMap<>();
+        final Map<CharSequence, Integer> shingleOccurrencesMap1 = new HashMap<>();
         shingles1.forEach(s -> {
             if (shingleOccurrencesMap1.containsKey(s)) {
-                int position = shingleOccurrencesMap1.get(s);
-                r1.set(position, r1.get(position) + 1);
+                final int position = shingleOccurrencesMap1.get(s).intValue();
+                r1.set(position, Integer.valueOf(r1.get(position).intValue() + 1));
 
             } else {
-                shingleOccurrencesMap1.put(s, shingleOccurrencesMap1.size());
-                r1.add(1);
+                shingleOccurrencesMap1.put(s, Integer.valueOf(shingleOccurrencesMap1.size()));
+                r1.add(Integer.valueOf(1));
             }
         });
 
-        Map<CharSequence, Integer> shingleOccurrencesMap2 = new HashMap<>();
+        final Map<CharSequence, Integer> shingleOccurrencesMap2 = new HashMap<>();
         shingles2.forEach(s -> {
             if (shingleOccurrencesMap2.containsKey(s)) {
-                int position = shingleOccurrencesMap2.get(s);
-                r2.set(position, r2.get(position) + 1);
+                final int position = shingleOccurrencesMap2.get(s).intValue();
+                r2.set(position, Integer.valueOf(r2.get(position).intValue() + 1));
 
             } else {
-                shingleOccurrencesMap2.put(s, shingleOccurrencesMap2.size());
-                r2.add(1);
+                shingleOccurrencesMap2.put(s, Integer.valueOf(shingleOccurrencesMap2.size()));
+                r2.add(Integer.valueOf(1));
             }
         });
 
-        int maxLength = Math.max(r1.size(), r2.size());
+        final int maxLength = Math.max(r1.size(), r2.size());
 
         int intersection = 0;
         int union = 0;
 
         for (int i = 0; i < maxLength; i++) {
-            int value1 = i < r1.size() ? r1.get(i) : 0;
-            int value2 = i < r2.size() ? r2.get(i) : 0;
+            final int value1 = i < r1.size() ? r1.get(i).intValue() : 0;
+            final int value2 = i < r2.size() ? r2.get(i).intValue() : 0;
             if (value1 > 0 || value2 > 0) {
                 union++;
 
@@ -98,9 +99,9 @@ public interface Similarity<T> {
     }
 
 
-    public static double signatureIndex(int[] signature1, int[] signature2) {
+    static double signatureIndex(final int[] signature1, final int[] signature2) {
         double similarity = 0;
-        int signatureSize = signature1.length;
+        final int signatureSize = signature1.length;
         for (int i = 0; i < signatureSize; i++) {
             if (signature1[i] == signature2[i]) {
                 similarity++;
@@ -110,8 +111,8 @@ public interface Similarity<T> {
     }
 
 
-    public static boolean isCandidatePair(int[] bands1, int[] bands2) {
-        int bandCount = bands1.length;
+    static boolean isCandidatePair(final int[] bands1, final int[] bands2) {
+        final int bandCount = bands1.length;
         for (int b = 0; b < bandCount; b++) {
             if (bands1[b] == bands2[b]) {
                 return true;
@@ -121,31 +122,31 @@ public interface Similarity<T> {
     }
 
 
-    static void closeExecutor(ExecutorService exec) {
+    static void closeExecutor(final ExecutorService exec) {
         exec.shutdown();
         try {
             exec.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-        } catch (InterruptedException ex) {
-            String m = "There was a problem executing the processing tasks.";
+        } catch (final InterruptedException ex) {
+            final String m = "There was a problem executing the processing tasks.";
             throw new RuntimeException(m, ex);
         }
     }
 
 
-    public static final class JaccardFactory {
+    final class JaccardFactory {
 
         // sensible defaults for common small strings (smaller than an email)
         // or small collections (between 10 to 40 elements)
         private int k = 2;
 
-        private ExecutorService exec = null;
+        private ExecutorService exec;
 
 
         /**
          * Length of n-gram shingles that are used for comparison (used for
          * strings only).
          */
-        public JaccardFactory withShingleLength(int shingleLength) {
+        public JaccardFactory withShingleLength(final int shingleLength) {
             this.k = shingleLength;
             return this;
         }
@@ -155,21 +156,21 @@ public interface Similarity<T> {
          * An executor where the kshingling tasks are spawned. If nothing is
          * provided then it launches a new executor with the cached thread pool.
          */
-        public JaccardFactory withExecutor(ExecutorService executor) {
+        public JaccardFactory withExecutor(final ExecutorService executor) {
             this.exec = executor;
             return this;
         }
 
 
-        public synchronized double of(String s1, String s2) {
-            ExecutorService e = exec;
+        public synchronized double of(final String s1, final String s2) {
+            ExecutorService e = this.exec;
             boolean usingDefaultExec = false;
             if (e == null || e.isShutdown()) {
                 e = Executors.newCachedThreadPool();
                 usingDefaultExec = true;
             }
-            JaccardStringSimilarity j = new JaccardStringSimilarity(e, k);
-            double index = j.calculate(s1, s2);
+            final JaccardStringSimilarity j = new JaccardStringSimilarity(e, this.k);
+            final double index = j.calculate(s1, s2);
             if (usingDefaultExec) {
                 closeExecutor(e);
             }
@@ -177,15 +178,16 @@ public interface Similarity<T> {
         }
 
 
-        public synchronized double of(Collection<? extends Number> c1,
-                                      Collection<? extends Number> c2) {
-            JaccardSetSimilarity j = new JaccardSetSimilarity();
+        public synchronized double of(
+            final Collection<? extends Number> c1,
+            final Collection<? extends Number> c2) {
+            final JaccardSetSimilarity j = new JaccardSetSimilarity();
             return j.calculate(c1, c2);
         }
     }
 
 
-    public static final class MinHashFactory {
+    final class MinHashFactory {
 
         // sensible defaults for common small strings (smaller than an email)
         // or small collections (between 10 to 40 elements)
@@ -197,14 +199,14 @@ public interface Similarity<T> {
 
         private HashMethod h = HashMethod.Murmur3;
 
-        private ExecutorService exec = null;
+        private ExecutorService exec;
 
 
         /**
          * Length of n-gram shingles that are used for comparison (used for
          * strings only).
          */
-        public MinHashFactory withShingleLength(int shingleLength) {
+        public MinHashFactory withShingleLength(final int shingleLength) {
             this.k = shingleLength;
             return this;
         }
@@ -216,7 +218,7 @@ public interface Similarity<T> {
          * should be 7. If nothing is provided, this value is determined in
          * pre-processing.
          */
-        public MinHashFactory withNumberOfElements(int elementCount) {
+        public MinHashFactory withNumberOfElements(final int elementCount) {
             this.n = elementCount;
             return this;
         }
@@ -226,7 +228,7 @@ public interface Similarity<T> {
          * The size of the generated signatures, which are compared to determine
          * similarity.
          */
-        public MinHashFactory withSignatureSize(int signatureSize) {
+        public MinHashFactory withSignatureSize(final int signatureSize) {
             this.sigSize = signatureSize;
             return this;
         }
@@ -236,7 +238,7 @@ public interface Similarity<T> {
          * The hashing algorithm used to hash shingles to signatures (used for
          * strings only).
          */
-        public MinHashFactory withHashMethod(HashMethod hashMethod) {
+        public MinHashFactory withHashMethod(final HashMethod hashMethod) {
             this.h = hashMethod;
             return this;
         }
@@ -247,22 +249,22 @@ public interface Similarity<T> {
          * spawned. If nothing is provided then it launches a new executor with
          * the cached thread pool.
          */
-        public MinHashFactory withExecutor(ExecutorService executor) {
+        public MinHashFactory withExecutor(final ExecutorService executor) {
             this.exec = executor;
             return this;
         }
 
 
-        public synchronized double of(String s1, String s2) {
-            ExecutorService e = exec;
+        public synchronized double of(final String s1, final String s2) {
+            ExecutorService e = this.exec;
             boolean usingDefaultExec = false;
             if (e == null || e.isShutdown()) {
                 e = Executors.newCachedThreadPool();
                 usingDefaultExec = true;
             }
-            MinHashStringSimilarity j = new MinHashStringSimilarity(
-                    e, sigSize, h, k);
-            double index = j.calculate(s1, s2);
+            final MinHashStringSimilarity j = new MinHashStringSimilarity(
+                    e, this.sigSize, this.h, this.k);
+            final double index = j.calculate(s1, s2);
             if (usingDefaultExec) {
                 closeExecutor(e);
             }
@@ -270,22 +272,23 @@ public interface Similarity<T> {
         }
 
 
-        public synchronized double of(Collection<? extends Number> c1,
-                                      Collection<? extends Number> c2) {
-            ExecutorService e = exec;
+        public synchronized double of(
+            final Collection<? extends Number> c1,
+            final Collection<? extends Number> c2) {
+            ExecutorService e = this.exec;
             boolean usingDefaultExec = false;
             if (e == null || e.isShutdown()) {
                 e = Executors.newCachedThreadPool();
                 usingDefaultExec = true;
             }
-            int nAux = n;
+            int nAux = this.n;
             if (nAux < 0) {
-                Set<Number> unionSet = new HashSet<>(c1);
+                final Set<Number> unionSet = new HashSet<>(c1);
                 unionSet.addAll(c2);
                 nAux = (int) unionSet.parallelStream().distinct().count();
             }
-            MinHashSetSimilarity j = new MinHashSetSimilarity(e, nAux, sigSize);
-            double index = j.calculate(c1, c2);
+            final MinHashSetSimilarity j = new MinHashSetSimilarity(e, nAux, this.sigSize);
+            final double index = j.calculate(c1, c2);
             if (usingDefaultExec) {
                 closeExecutor(e);
             }
@@ -294,7 +297,7 @@ public interface Similarity<T> {
     }
 
 
-    public static final class LSHFactory {
+    final class LSHFactory {
 
         // sensible defaults for common small strings (smaller than an email)
         // or small collections (between 10 to 40 elements)
@@ -310,14 +313,14 @@ public interface Similarity<T> {
 
         private HashMethod h = HashMethod.Murmur3;
 
-        private ExecutorService exec = null;
+        private ExecutorService exec;
 
 
         /**
          * Length of n-gram shingles that are used when generating signatures
          * (used for strings only).
          */
-        public LSHFactory withShingleLength(int shingleLength) {
+        public LSHFactory withShingleLength(final int shingleLength) {
             this.k = shingleLength;
             return this;
         }
@@ -329,7 +332,7 @@ public interface Similarity<T> {
          * should be 7. If nothing is provided, this value is determined in
          * pre-processing.
          */
-        public LSHFactory withNumberOfElements(int elementCount) {
+        public LSHFactory withNumberOfElements(final int elementCount) {
             this.n = elementCount;
             return this;
         }
@@ -338,7 +341,7 @@ public interface Similarity<T> {
         /**
          * The number of bands where the minhash signatures will be structured.
          */
-        public LSHFactory withNumberOfBands(int bandCount) {
+        public LSHFactory withNumberOfBands(final int bandCount) {
             this.b = bandCount;
             return this;
         }
@@ -347,7 +350,7 @@ public interface Similarity<T> {
         /**
          * The number of rows where the minhash signatures will be structured.
          */
-        public LSHFactory withNumberOfRows(int rowCount) {
+        public LSHFactory withNumberOfRows(final int rowCount) {
             this.r = rowCount;
             return this;
         }
@@ -357,7 +360,7 @@ public interface Similarity<T> {
          * A threshold S that balances the number of false positives and false
          * negatives.
          */
-        public LSHFactory withThreshold(int threshold) {
+        public LSHFactory withThreshold(final int threshold) {
             this.s = threshold;
             return this;
         }
@@ -367,7 +370,7 @@ public interface Similarity<T> {
          * The hashing algorithm used to hash shingles to signatures (used for
          * strings only).
          */
-        public LSHFactory withHashMethod(HashMethod hashMethod) {
+        public LSHFactory withHashMethod(final HashMethod hashMethod) {
             this.h = hashMethod;
             return this;
         }
@@ -378,21 +381,21 @@ public interface Similarity<T> {
          * spawned. If nothing is provided then it launches a new executor with
          * the cached thread pool.
          */
-        public LSHFactory withExecutor(ExecutorService executor) {
+        public LSHFactory withExecutor(final ExecutorService executor) {
             this.exec = executor;
             return this;
         }
 
 
-        public synchronized double of(String s1, String s2) {
-            ExecutorService e = exec;
+        public synchronized double of(final String s1, final String s2) {
+            ExecutorService e = this.exec;
             boolean usingDefaultExec = false;
             if (e == null || e.isShutdown()) {
                 e = Executors.newCachedThreadPool();
                 usingDefaultExec = true;
             }
-            LSHStringSimilarity j = new LSHStringSimilarity(e, b, r, s, h, k);
-            double index = j.calculate(s1, s2);
+            final LSHStringSimilarity j = new LSHStringSimilarity(e, this.b, this.r, this.s, this.h, this.k);
+            final double index = j.calculate(s1, s2);
             if (usingDefaultExec) {
                 closeExecutor(e);
             }
@@ -400,22 +403,23 @@ public interface Similarity<T> {
         }
 
 
-        public synchronized double of(Collection<? extends Number> c1,
-                                      Collection<? extends Number> c2) {
-            ExecutorService e = exec;
+        public synchronized double of(
+            final Collection<? extends Number> c1,
+            final Collection<? extends Number> c2) {
+            ExecutorService e = this.exec;
             boolean usingDefaultExec = false;
             if (e == null || e.isShutdown()) {
                 e = Executors.newCachedThreadPool();
                 usingDefaultExec = true;
             }
-            int nAux = n;
+            int nAux = this.n;
             if (nAux < 0) {
-                Set<Number> unionSet = new HashSet<>(c1);
+                final Set<Number> unionSet = new HashSet<>(c1);
                 unionSet.addAll(c2);
                 nAux = (int) unionSet.parallelStream().distinct().count();
             }
-            LSHSetSimilarity j = new LSHSetSimilarity(e, nAux, b, r, s);
-            double index = j.calculate(c1, c2);
+            final LSHSetSimilarity j = new LSHSetSimilarity(e, nAux, this.b, this.r, this.s);
+            final double index = j.calculate(c1, c2);
             if (usingDefaultExec) {
                 closeExecutor(e);
             }

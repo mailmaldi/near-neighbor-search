@@ -35,15 +35,15 @@ public class Signature2BandsConverter
     private final int r;
 
 
-    public Signature2BandsConverter(int b, int r) {
+    public Signature2BandsConverter(final int b, final int r) {
         this.b = b;
         this.r = r;
     }
 
 
     @Override
-    public Callable<int[]> apply(int[] sig) {
-        return new BandsCallable(sig, b, r);
+    public Callable<int[]> apply(final int[] sig) {
+        return new BandsCallable(sig, this.b, this.r);
     }
 
 
@@ -58,7 +58,7 @@ public class Signature2BandsConverter
         private final int r;
 
 
-        private BandsCallable(int[] sig, int b, int r) {
+        private BandsCallable(final int[] sig, final int b, final int r) {
             this.sig = sig;
             this.b = b;
             this.r = r;
@@ -67,13 +67,13 @@ public class Signature2BandsConverter
 
         @Override
         public int[] call() throws Exception {
-            int sigSize = sig.length;
-            int[] res = new int[b];
-            int buckets = sigSize / b;
+            final int sigSize = this.sig.length;
+            final int[] res = new int[this.b];
+            final int buckets = sigSize / this.b;
 
             for (int i = 0; i < sigSize; i++) {
-                int band = Math.min(i / buckets, b - 1);
-                res[band] = (int) ((res[band] + (long) sig[i] * LARGE_PRIME) % r);
+                final int band = Math.min(i / buckets, this.b - 1);
+                res[band] = (int) (res[band] + (long) this.sig[i] * LARGE_PRIME); // TODO removed % r
             }
 
             return res;
