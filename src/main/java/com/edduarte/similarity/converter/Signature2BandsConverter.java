@@ -17,6 +17,7 @@
 package com.edduarte.similarity.converter;
 
 
+import java.io.Serializable;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -27,17 +28,28 @@ import java.util.function.Function;
  * @version 0.0.1
  * @since 0.0.1
  */
+@SuppressWarnings("FieldNamingConvention")
 public class Signature2BandsConverter
-        implements Function<int[], Callable<int[]>> {
+        implements Function<int[], Callable<int[]>>, Serializable
+{
 
+    private static final long serialVersionUID = 8818129519227687868L;
     private final int b;
-
     private final int r;
-
 
     public Signature2BandsConverter(final int b, final int r) {
         this.b = b;
         this.r = r;
+    }
+
+    public int getB()
+    {
+        return this.b;
+    }
+
+    public int getR()
+    {
+        return this.r;
     }
 
 

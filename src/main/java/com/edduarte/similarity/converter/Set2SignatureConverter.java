@@ -16,6 +16,7 @@
 
 package com.edduarte.similarity.converter;
 
+import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,8 +34,10 @@ import java.util.stream.IntStream;
  * @since 0.0.1
  */
 public class Set2SignatureConverter
-        implements Function<Collection<? extends Number>, Callable<int[]>> {
+        implements Function<Collection<? extends Number>, Callable<int[]>>, Serializable
+{
 
+    private static final long serialVersionUID = 5407020782327532877L;
     /**
      * Random coefficient "a" for the random hash functions
      */
