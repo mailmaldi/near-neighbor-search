@@ -33,6 +33,8 @@ public class Signature2BandsConverter
         implements Function<int[], Callable<int[]>>, Serializable
 {
 
+    private static final int LARGE_PRIME = 433494437;
+
     private static final long serialVersionUID = 8818129519227687868L;
     private final int b;
     private final int r;
@@ -58,10 +60,22 @@ public class Signature2BandsConverter
         return new BandsCallable(sig, this.b, this.r);
     }
 
+    public int[] compute(final int[] sig)
+    {
+        final int sigSize = sig.length;
+        final int[] res = new int[this.b];
+        final int buckets = sigSize / this.b;
+
+        for (int i = 0; i < sigSize; i++) {
+            final int band = Math.min(i / buckets, this.b - 1);
+            res[band] = (int) (res[band] + (long) sig[i] * LARGE_PRIME); // TODO removed % r
+        }
+
+        return res;
+    }
+
 
     private static class BandsCallable implements Callable<int[]> {
-
-        private static final int LARGE_PRIME = 433494437;
 
         private final int[] sig;
 

@@ -37,6 +37,8 @@ public class Set2SignatureConverter
         implements Function<Collection<? extends Number>, Callable<int[]>>, Serializable
 {
 
+    private static final int LARGE_PRIME = 433494437;
+
     private static final long serialVersionUID = 5407020782327532877L;
     /**
      * Random coefficient "a" for the random hash functions
@@ -86,10 +88,28 @@ public class Set2SignatureConverter
         return new HashCallable(this.n, this.sigSize, this.a, this.b, set);
     }
 
+    public int[] compute(final Collection<? extends Number> set)
+    {
+        final int[] signature = IntStream.range(0, this.sigSize).map(i -> Integer.MAX_VALUE).toArray();
+
+        final List<? extends Number> list = new ArrayList<>(set);
+        list.sort(Comparator.comparingLong(Number::longValue));
+
+        for (final Number x : list) {
+            for (int i = 0; i < this.sigSize; i++) {
+                signature[i] = Math.min(signature[i], universalHashing(i, x));
+            }
+        }
+
+        return signature;
+    }
+
+    private int universalHashing(final int i, final Number x) {
+        return (int) ((this.a[i] * x.longValue() + this.b[i]) % LARGE_PRIME); // TODO removed %n
+    }
+
 
     private static class HashCallable implements Callable<int[]> {
-
-        private static final int LARGE_PRIME = 433494437;
 
         private final int n;
 
