@@ -90,12 +90,17 @@ public class Set2SignatureConverter
 
     public int[] compute(final Collection<? extends Number> set)
     {
-        final int[] signature = IntStream.range(0, this.sigSize).map(i -> Integer.MAX_VALUE).toArray();
+        final int[] signature = new int[this.sigSize];
+        for (int i = 0; i < this.sigSize; i++)
+        {
+            signature[i] = Integer.MAX_VALUE;
+        }
+            //IntStream.range(0, this.sigSize).map(i -> Integer.MAX_VALUE).toArray();
 
-        final List<? extends Number> list = new ArrayList<>(set);
-        list.sort(Comparator.comparingLong(Number::longValue));
+//        final List<? extends Number> list = new ArrayList<>(set);
+//        list.sort(Comparator.comparingLong(Number::longValue));
 
-        for (final Number x : list) {
+        for (final Number x : set) {
             for (int i = 0; i < this.sigSize; i++) {
                 signature[i] = Math.min(signature[i], universalHashing(i, x));
             }
