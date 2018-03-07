@@ -1,6 +1,6 @@
 # Near Neighbor Search
 
-[![Build Status](https://travis-ci.org/edduarte/near-neighbor-search.svg?branch=master)](https://travis-ci.org/edduarte/near-neighbor-search)
+[![Build Status](https://travis-ci.org/mailmaldi/near-neighbor-search.svg?branch=master)](https://travis-ci.org/mailmaldi/near-neighbor-search)
 
 Near Neighbor Search algorithms (as specified in "Mining of Massive Datasets",
 Cambridge University Press, Rajaraman, A., & Ullman, J. D.) implemented in Java.
